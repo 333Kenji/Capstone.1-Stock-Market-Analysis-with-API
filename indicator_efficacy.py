@@ -15,3 +15,7 @@ df=data[0]
 # To display HTML report (inline for Jupyter)
 profile = ProfileReport(df, title="Pandas Profiling Report")
 profile.to_notebook_iframe()
+
+
+
+# something

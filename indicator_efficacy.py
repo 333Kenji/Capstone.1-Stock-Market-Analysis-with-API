@@ -40,17 +40,22 @@ df1.index=df1['date']
 
 ticker='TSLA'
 
-#Creating and Plotting Moving Averages
-df1["SMA5"] = df1['Adjusted Close'].rolling(window=5).mean()
-df1["SMA20"] = df1['Adjusted Close'].rolling(window=20).mean()
-df1['exma'] = df1['Adjusted Close'].ewm(halflife=0.5, min_periods=20).mean()
+# Long and Short Moving Averages
+EMA12 = df1.Close.ewm(span=12, adjust=False).mean()
+EMA26 = df1.Close.ewm(span=26, adjust=False).mean()
+# Calculate the MACD
+MACD = EMA12 - EMA26
+# Generate The Signal
+signal = MACD.ewm(span=9, adjust=False).mean()
+
+# Plotting MACD Against Signal
 plt.figure(figsize=(20,10))
-plt.plot(df1['SMA5'], 'g--', label="SMA5")
-plt.plot(df1['SMA20'], 'r--', label="SMA20")
-plt.plot(df1['Adjusted Close'], label="close")
-plt.legend()
-plt.title(f"{ticker} Moving Averages")
+plt.plot(df1.index, MACD, label = f'{ticker} MACD', color='red', alpha=.4)
+plt.plot(df1.index, signal, label='Signal Line', color='blue',alpha=.4)
+plt.legend(loc='upper left')
+plt.xticks(rotation=45)
 plt.show()
+
 
 
 #Bollinger Bands

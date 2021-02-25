@@ -1,68 +1,77 @@
-# Import packages
+# Import Libraries
+%matplotlib inline
 import matplotlib.pyplot as plt
 import pandas as pd
 from pandas_profiling import ProfileReport
+
+# Dash
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Output, Input
+import dash_bootstrap_components as dbc
+import plotly.express as px
+import plotly.graph_objects as go
+
+# API Connection
 from alpha_vantage.timeseries import TimeSeries
 
-# API connection to Alpha Vantage API
 API_key = 'YTYPBTRIFHXSB2W2'
 ts = TimeSeries(key=API_key, output_format='pandas')
-data = ts.get_daily_adjusted('TSLA')
 
 # Initial Dataframe
+ticker='TSLA'
+data = ts.get_daily_adjusted(ticker)
 df=data[0]
+df=df.transpose()
+df.rename(index={'1. open':'Open', '2. high':'High', '3. low':'Low', '4. close':'Close', '5. adjusted close':'Adjusted Close', '6. volume':'Volume', '7. dividend amount':'Dividend Amount', '8. split coefficient':'Split Coefficient'}, inplace=True)
+df=df.transpose()
 
-# To display HTML report (inline for Jupyter)
-profile = ProfileReport(df, title="Pandas Profiling Report")
-profile.to_notebook_iframe()
-
-
-# Raw graph of all relevant features, irrelevent are dividends and splits - for test case at least (TSLA)
-fig, ax = plt.subplots()
-plt.figure(figsize=(20,10))
-
-ax.plot(df['1. open'], label='Open')
-ax.plot(df['2. high'], label='High')
-ax.plot(df['3. low'], label='Low')
-ax.plot(df['4. close'], label='Close')
-ax.plot(df['5. adjusted close'], label='Adjusted Close')
-
-plt.legend()
-plt.show()
+### To display HTML report (inline for Jupyter)
+# profile = ProfileReport(df, title="Pandas Profiling Report")
+# profile.to_notebook_iframe()
 
 
+# Captured DF
+df1=pd.read_csv('https://raw.githubusercontent.com/333Kenji/Technical-Indicator-Efficacy/master/Data/df.csv')
+
+df1=df1[::-1]
+df1.index=df1['date']
+
+ticker='TSLA'
 
 #Creating and Plotting Moving Averages
-df["SMA5"] = df['5. adjusted close'].rolling(window=5).mean()
-df["SMA20"] = df['5. adjusted close'].rolling(window=20).mean()
-df['exma'] = df['5. adjusted close'].ewm(halflife=0.5, min_periods=20).mean()
+df1["SMA5"] = df1['Adjusted Close'].rolling(window=5).mean()
+df1["SMA20"] = df1['Adjusted Close'].rolling(window=20).mean()
+df1['exma'] = df1['Adjusted Close'].ewm(halflife=0.5, min_periods=20).mean()
 plt.figure(figsize=(20,10))
-plt.plot(df['SMA1'], 'g--', label="SMA1")
-plt.plot(df['SMA2'], 'r--', label="SMA2")
-plt.plot(df['5. adjusted close'], label="close")
+plt.plot(df1['SMA5'], 'g--', label="SMA5")
+plt.plot(df1['SMA20'], 'r--', label="SMA20")
+plt.plot(df1['Adjusted Close'], label="close")
 plt.legend()
 plt.title(f"{ticker} Moving Averages")
 plt.show()
 
 
 #Bollinger Bands
-df['middle_band'] = df['5. adjusted close'].rolling(window=20).mean()
-df['upper_band'] = df['5. adjusted close'].rolling(window=20).mean() + df['5. adjusted close'].rolling(window=20).std()*2
-df['lower_band'] = df['5. adjusted close'].rolling(window=20).mean() - df['5. adjusted close'].rolling(window=20).std()*2
+df1['middle_band'] = df1['Adjusted Close'].rolling(window=20).mean()
+df1['upper_band'] = df1['Adjusted Close'].rolling(window=20).mean() + df1['Adjusted Close'].rolling(window=20).std()*2
+df1['lower_band'] = df1['Adjusted Close'].rolling(window=20).mean() - df1['Adjusted Close'].rolling(window=20).std()*2
 plt.figure(figsize=(20,10))
-plt.plot(df['upper_band'], 'g--', label="upper")
-plt.plot(df['middle_band'], 'r--', label="middle")
-plt.plot(df['lower_band'], 'y--', label="lower")
-plt.plot(df['5. adjusted close'], label="close")
+plt.plot(df1['upper_band'], 'g--', label="upper")
+plt.plot(df1['middle_band'], 'r--', label="middle")
+plt.plot(df1['lower_band'], 'y--', label="lower")
+plt.plot(df1['Adjusted Close'], label="close")
 plt.legend()
 plt.title(f"{ticker} Bollinger Bands")
 plt.show()
 
 plt.figure(figsize=(20,10))
-plt.plot(df['upper_band'].iloc[-200:], 'g--', label="upper")
-plt.plot(df['middle_band'].iloc[-200:], 'r--', label="middle")
-plt.plot(df['lower_band'].iloc[-200:], 'y--', label="lower")
-plt.plot(df['5. adjusted close'].iloc[-200:], label="close")
+plt.plot(df1['upper_band'].iloc[-200:], 'g--', label="upper")
+plt.plot(df1['middle_band'].iloc[-200:], 'r--', label="middle")
+plt.plot(df1['lower_band'].iloc[-200:], 'y--', label="lower")
+plt.plot(df1['Adjusted Close'].iloc[-200:], label="close")
 plt.legend()
 plt.title(f"{ticker} Bollinger Bands")
 plt.show()
+
